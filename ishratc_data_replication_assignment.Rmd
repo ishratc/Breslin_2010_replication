@@ -191,15 +191,7 @@ legend ("bottomright", bty = "n", legend=paste("R=", figure_2a_r))
 
 ```
 
-```{r, echo=FALSE}
-
-fig2a <- "https://github.com/ishratc/ishratc-data-replication-assignment/blob/master/fig2a.png"
-
-```
-
-<center><img src="`r fig2a`"></center>
-
-Now I have the y values for figure 2b as well. I just need to use a similar process to get the x values.
+<img src="img/journal.pone.0013352.g002.png" width="200px"/>
 
 ```{r}
 
@@ -225,16 +217,7 @@ abline(lm (MVAG_change ~ MVAG_U_ml))
 legend ("bottomright", bty = "n", legend=paste("R=", figure_2b_r))
 
 ```
-
-```{r, echo=FALSE}
-
-fig2b <- "https://github.com/ishratc/ishratc-data-replication-assignment/blob/master/fig2b.png"
-
-```
-
-<center><img src="`r fig2b`"></center>
-
-For the last panel in this figure we are comparing the Amylase amount to the Amylase Activity. 
+<img src="img/journal.pone.0013352.g002.png" width="200px"/>
 
 ```{r}
 
@@ -252,13 +235,7 @@ legend ("bottomright", bty = "n", legend=paste("R=", figure_2c_r))
 
 ```
 
-```{r, echo=FALSE}
-
-fig2c <- "https://github.com/ishratc/ishratc-data-replication-assignment/blob/master/fig2c.png"
-
-```
-
-<center><img src="`r fig2c`"></center>
+<img src="img/journal.pone.0013352.g002.png" width="200px"/>
 
 We have completed analysis on salivary amylase measures and showed that amount, activity, and viscosity are correlated. 
 
@@ -302,13 +279,7 @@ legend ("bottomright", bty = "n", legend=paste("R=", figure_3_r))
 
 ```
 
-```{r, echo=FALSE}
-
-fig3 <- "https://github.com/ishratc/ishratc-data-replication-assignment/blob/master/fig3.png"
-
-```
-
-<center><img src="`r fig3`"></center>
+<img src="img/journal.pone.0013352.g003.png" width="200px"/>
 
 Figure, r value and p value recreated. 
 
