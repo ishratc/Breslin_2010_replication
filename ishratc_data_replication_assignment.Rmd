@@ -1,0 +1,323 @@
+---
+title: "Replication"
+author: "Ishrat Chowdhury"
+date: "November 13, 2019"
+output: html_document
+---
+
+#Introduction:
+
+The digestion of starch is initiated by salivary amylase. The amount of salivary amylase can have an effect on starch viscosity. Copy number variations in the AMY1 gene also have an effect on amount of salivary amylase, and thus starch viscosity as well. This paper shows that having high amounts of salivary amylase can cause a viscous starch solution to be broken down faster. In addition, it shows that high AMY1 CNVs lead to more salivary amylase production and therefore faster starch breakdown.
+
+#Results:
+
+Their first set of Figures show the change in starch viscosity over time. Ultimately they found that the impact of saliva either has no effect or causes a rapid decline in starch viscosity. They had two graphs showing the change over time for the 4 subjects with the greatest and least change each. They also had an inset with all the subjects. I did not choose to replicate this because it is just showing change over time, and does not have any statistics. However, the overall change overtime was calculated using this data. We will see how this was done later on.
+
+First let's load our data, You will need to download the xls file in the following Github repository (https://github.com/ishratc/ishratc-data-replication-assignment/blob/master/pone.0013352.s001.xls) on to your own computer and change the code to match your own file location when stated in the annotations. The reason it was done this way, is because the data they provided was in an xls format, and changing it to a csv corrupted the file. We will be using the package {readxl} to use the data.
+
+```{r}
+
+library("readxl") 
+#package helps read excel files
+
+d <- read_excel("C:/Users/Ishrat/Documents/AN 597/pone.0013352.s001.xls", sheet="MVAG") 
+d1 <- read_excel("C:/Users/Ishrat/Documents/AN 597/pone.0013352.s001.xls", sheet="Amylase")
+#insert your own file directory here
+#read_excel is the command used to read the file
+#sheet specifies whihc sheet in the file you want to look at we just loaed two sheets
+
+head(d)
+head(d1)
+
+```
+
+We can see that our data is loaded but there are a lot of NA's and the headers don't make a lot of sense. We also get a list of problems. This is fine because we will be formatting this data as we go.
+
+The first kind of data analysis they do is reporting mean and standard deviations of amylase amount, amylase concentration per minute, amylase activity per unit, and amylase activity per minute. The process of this is below.
+
+As mentioned before, first we need to clean up the data.
+
+```{r}
+
+d1 <- d1[-c(1:3),] 
+#gets rid of the first 3 rows
+
+names(d1) <- c("subject", "sex", "flowrate", "mg/ml", "mg/min", "U/ml", "U/min", "Diploid_AMY1_copies", "SD", "Copies")
+#renames the row
+
+```
+
+Although it is showing a message saying that it needs 16 names, it really only needs 10 for what we are doing. The other columns are not going to be called, so I do not need to rename them. Not all error messages are horrible! Now that the dataframe looks better we can easily call the information we need.
+
+
+```{r}
+
+#Amylase Amount mg/ml
+
+mg_ml<-d1[1:65, "mg/ml"]
+ex_mg_ml<-d1[69:73, "mg/ml"] #add external subject data
+mg_ml<-as.numeric(unlist(mg_ml)) #make it a list of numbers
+ex_mg_ml<-as.numeric(unlist(ex_mg_ml)) #repeat for external subjects
+mg_ml<-c(ex_mg_ml, mg_ml) #combine the external subjects with the original subjects
+mean_mg_ml<-mean(mg_ml)
+mean_mg_ml # mean amylase mg/ml 2.63 mg/ml (Mandel, 2.64 mg/ml)
+sd_mg_ml<- sd(mg_ml)
+sd_mg_ml #sd amylase mg/ml 1.85 mg/ml (Mandel, 1.8 mg/ml)
+
+```
+
+This matches the paper! The difference might be because they may have rounded differently or decided to leave a subject out. The n for these numbers was not stated in the paper. Let's do it for the rest of the values.
+
+```{r}
+
+#Amylase Amount mg/min
+
+mg_min<-d1[1:65, "mg/min"]
+ex_mg_min<-d1[69:73, "mg/min"]
+mg_min<-as.numeric(unlist(mg_min))
+ex_mg_min<-as.numeric(unlist(ex_mg_min))
+mg_min<-c(ex_mg_min, mg_min)
+mean_mg_min<-mean(mg_min)
+mean_mg_min # mean amylase mg/min 5.64 mg/min (Mandel, 5.7 mg/min)
+sd_mg_min<- sd(mg_min)
+sd_mg_min #sd amylase mg/min 7.25 mg/min (Mandel, 7.1 mg/min)
+
+#Amylase Activity U/ml
+
+U_ml<-d1[1:65, "U/ml"]
+ex_U_ml<-d1[69:73, "U/ml"]
+U_ml<-as.numeric(unlist(U_ml))
+ex_U_ml<-as.numeric(unlist(ex_U_ml))
+U_ml<-c(ex_U_ml, U_ml)
+mean_U_ml<-mean(U_ml)
+mean_U_ml # mean amylase U/ml 93.09 U/ml (Mandel, 93U/ml )
+sd_U_ml<- sd(U_ml)
+sd_U_ml #sd amylase U/ml 62.63 U/ml (Mandel, 62 U/ml)
+
+#Amylase Activity U/min
+
+U_min<-d1[1:65, "U/min"]
+ex_U_min<-d1[69:73, "U/min"]
+U_min<-as.numeric(unlist(U_min))
+ex_U_min<-as.numeric(unlist(ex_U_min))
+U_min<-c(ex_U_min, U_min)
+mean_U_min<-mean(U_min)
+mean_U_min # mean amylase U/min 176.88 U/min (Mandel, 177 U/min)
+sd_U_min<- sd(U_min)
+sd_U_min #sd amylase U/min 166.16 U/min (Mandel, 166 U/min)
+
+```
+
+The next set of analysis they did was correlating amylase measures with each other. 
+They looked at the relationship between amyl amount (mg/ml) and overall viscosity change. 
+For us to look at this first we need to get the overall viscosity change. 
+
+```{r}
+
+#First clean-up the data
+MVAG<-d #add raw data
+MVAG<-MVAG[-c(90:276),] # take out rows of NA
+MVAG<-MVAG[-c(1:27),] #they only used data from 120-425 seconds, take out rows for 0-120 seconds
+MVAG<-MVAG[-c(1:2)] #take out the minutes and seconds columns
+colnames(MVAG)<-as.numeric(1:42) #rename the columns as numbers 
+str(MVAG) #check what we made
+
+#for some reason column 1 is in character we want it to be numeric
+MVAG$`1`<-as.numeric(as.character(MVAG$`1`))
+str(MVAG)
+#check again
+#everyhting is numeric
+
+MVAG<-as.matrix(MVAG) #turn it into a matrix so we can do some calculations
+
+max_MVAG<-apply(MVAG, 2, max)
+max_MVAG<-as.numeric(unlist(max_MVAG))
+max_MVAG #vector of all max values
+
+
+min_MVAG<-apply(MVAG, 2, min)
+min_MVAG<-as.numeric(unlist(min_MVAG))
+min_MVAG #vector of all min values
+
+MVAG_change<-(max_MVAG-min_MVAG) 
+MVAG_change 
+#vector of overall change in viscocity
+#these are the y values for the first 2 panels of Figure 2
+
+```
+
+Now that we have the y values let's focus on the x values. In panel a of Figure 2 they compare overall viscosity to amylase amount (mg/ml). We have to keep in mind that they did not use the external subjects for this, and the data for overall viscosity is only available for a certain group of subjects. Let's start by getting a vector of the subjects 
+
+```{r}
+
+subjects<- d[-c(1:2),] 
+subjects<-subjects["1",(3:44)] #this string contains the subjects they used for MVAG
+subjects<-as.numeric(unlist(subjects))
+subjects
+
+```
+
+We can use this to get the right number for amylase amount.
+
+```{r}
+
+MVAG_mg_ml<-d1[1:65, "mg/ml"] #add the mg/ml data 
+MVAG_mg_ml<-MVAG_mg_ml[subjects,] #make it correspond to the right subjects
+str(MVAG_mg_ml)
+MVAG_mg_ml$`mg/ml`<-as.numeric(as.character(MVAG_mg_ml$`mg/ml`)) #make them numeric
+MVAG_mg_ml<-unlist(MVAG_mg_ml$"mg/ml")
+MVAG_mg_ml #now we have vector of x values for panel a in Figure 2
+
+```
+
+It looks like we have 42 values but the paper mentions 41. I remove one outlier point, although the specific point they removed is not mentioned in the paper. I find the r value and p value and plot the results next. Pretty close! Differences might be due to rounding, or how they cleaned up the data with outliers.
+
+```{r}
+
+MVAG_change<-MVAG_change[-c(8)]
+MVAG_mg_ml<-MVAG_mg_ml[-c(8)]
+
+figure_2a<-lm(MVAG_change ~ MVAG_mg_ml)
+figure_2a_r<-sqrt(summary(figure_2a)$r.squared)
+figure_2a_r<-signif(figure_2a_r, digits=2)
+figure_2a_r #Figure 2a r value = 0.56 (Mandel 0.58)
+
+figure_2a_p<-summary(figure_2a)$coefficients[2,4] 
+figure_2a_p #p value 0.00016 (Mandel reports that it is less than 0.0001, in this case it isn't but it is still significant, could eb a rounding error)
+
+plot(x=MVAG_mg_ml, y=MVAG_change, main="Figure 2a", xlab= "Amylase Amount (mg/ml)", ylab = "Change in Viscocity", pch =19)
+abline(lm (MVAG_change ~ MVAG_mg_ml))
+legend ("bottomright", bty = "n", legend=paste("R=", figure_2a_r))
+
+```
+
+```{r, echo=FALSE}
+
+fig2a <- "https://github.com/ishratc/ishratc-data-replication-assignment/blob/master/fig2a.png"
+
+```
+
+<center><img src="`r fig2a`"></center>
+
+Now I have the y values for figure 2b as well. I just need to use a similar process to get the x values.
+
+```{r}
+
+MVAG_U_ml<-d1[1:65, "U/ml"]
+MVAG_U_ml<-MVAG_U_ml[subjects,]
+str(MVAG_U_ml)
+MVAG_U_ml$`U/ml`<-as.numeric(as.character(MVAG_U_ml$`U/ml`))
+MVAG_U_ml<-unlist(MVAG_U_ml$"U/ml")
+MVAG_U_ml #x values for figure 2b
+
+MVAG_U_ml<-MVAG_U_ml[-c(8)] #remove outlier
+
+figure_2b<-lm(MVAG_change ~ MVAG_U_ml)
+figure_2b_r<-sqrt(summary(figure_2b)$r.squared)
+figure_2b_r<-signif(figure_2b_r, digits=2)
+figure_2b_r #Figure 2b r value = 0.66 (Mandel 0.67)
+
+figure_2b_p<-summary(figure_2b)$coefficients[2,4] 
+figure_2b_p #p value is less than 0.0001
+
+plot(x=MVAG_U_ml, y=MVAG_change, main="Figure 2b", xlab= "Amylase Activity (U/ml)", ylab = "Change in Viscocity", pch=19 )
+abline(lm (MVAG_change ~ MVAG_U_ml))
+legend ("bottomright", bty = "n", legend=paste("R=", figure_2b_r))
+
+```
+
+```{r, echo=FALSE}
+
+fig2b <- "https://github.com/ishratc/ishratc-data-replication-assignment/blob/master/fig2b.png"
+
+```
+
+<center><img src="`r fig2b`"></center>
+
+For the last panel in this figure we are comparing the Amylase amount to the Amylase Activity. 
+
+```{r}
+
+figure_2c<-lm(U_ml ~ mg_ml)
+figure_2c_r<-sqrt(summary(figure_2c)$r.squared)
+figure_2c_r<-signif(figure_2c_r, digits=2)
+figure_2c_r #Figure 2c r value = 0.61 (Mandel 0.61)
+
+figure_2c_p<-summary(figure_2c)$coefficients[2,4] 
+figure_2c_p #p value is less than 0.0001
+
+plot(x=mg_ml, y=U_ml, main="Figure 2c", xlab= "Amylase Amount (mg/ml)", ylab = "Amylase Activity (U/ml)", pch=19 )
+abline(lm (U_ml ~ mg_ml))
+legend ("bottomright", bty = "n", legend=paste("R=", figure_2c_r))
+
+```
+
+```{r, echo=FALSE}
+
+fig2c <- "https://github.com/ishratc/ishratc-data-replication-assignment/blob/master/fig2c.png"
+
+```
+
+<center><img src="`r fig2c`"></center>
+
+We have completed analysis on salivary amylase measures and showed that amount, activity, and viscosity are correlated. 
+
+Now let's move on to AMY1 copy number analysis. We start by finding the mean and standard deviation.
+
+```{r}
+
+AMY1_copies<-d1[1:64, "Diploid_AMY1_copies"]
+AMY1_copies<-as.numeric(unlist(AMY1_copies))
+AMY1_copies<-AMY1_copies[-c(29,41)] #remove NA
+AMY1_copies
+AMY1_copies_mean<-mean(AMY1_copies)
+AMY1_copies_mean # mean copies 4.4 (Mandel, 4.4)
+sd_AMY1_copies<- sd(AMY1_copies)
+sd_AMY1_copies #sd copies 1.9 (Mandel, 2)
+
+```
+
+Next we correlate copy number to amylase amount. We need to make sure we are using data from the same subjects we have data for copy numbers. Then we plot it.
+
+```{r}
+
+AMY_mg_ml<-d1[1:64, "mg/ml"] #add the mg/ml data 
+AMY_mg_ml<-as.numeric(unlist(AMY_mg_ml))
+AMY_mg_ml<-AMY_mg_ml[-c(29,41)]
+AMY_mg_ml
+
+figure_3<-lm(AMY_mg_ml ~ AMY1_copies)
+figure_3_r<-sqrt(summary(figure_3)$r.squared)
+figure_3_r<-signif(figure_3_r, digits=2)
+figure_3_r #Figure 2c r value = 0.50 (Mandel 0.50)
+
+figure_3_p<-summary(figure_3)$coefficients[2,4] 
+figure_3_p #p value is less than 0.0001
+
+AMY1_copies_round<-trunc(AMY1_copies) #round copy numbers
+AMY1_copies_round
+
+plot(x=AMY1_copies_round, y=AMY_mg_ml, main="Figure 3", xlab= "AMY1 Diploid Gene Copy Number", ylab = "Amylase Amount (mg/ml)" )
+legend ("bottomright", bty = "n", legend=paste("R=", figure_3_r))
+
+```
+
+```{r, echo=FALSE}
+
+fig3 <- "https://github.com/ishratc/ishratc-data-replication-assignment/blob/master/fig3.png"
+
+```
+
+<center><img src="`r fig3`"></center>
+
+Figure, r value and p value recreated. 
+
+The next thing they did was plot the change of viscosity perception over time based on different stimuli. I again did not replicate this one because it just showed change over time. They found that there were large individual differences in perception. Finally they subsetted some of this data to make Figure 5. Subjects were divided based on their amylase levels then this was related to their overall viscosity perception and half of their viscosity perception. Since this involves introducing a new sheet in the original dataset, and subsetting the exisitng data multiple times, this was not recreated either. They found that amylase levels were related to precieved viscocity. 
+
+#Conclusion: 
+
+Overall this papaer showed that amylase amount, activity, and viscosity are related. We were able to find descriptive statistics on this as well as create figures and inferential statistics. We also showed that amylase amount was correlated with copy number variations in the AMY1 gene. 
+
+
+
+
