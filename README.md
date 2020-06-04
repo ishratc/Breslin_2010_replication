@@ -1,1 +1,3 @@
-# ishratc-data-replication-assignment
+#Breslin_2010_replication
+
+The digestion of starch is initiated by salivary amylase. The amount of salivary amylase can have an effect on starch viscosity. Copy number variations in the AMY1 gene also have an effect on amount of salivary amylase, and thus starch viscosity as well. Breslin 2010 shows that having high amounts of salivary amylase can cause a viscous starch solution to be broken down faster. In addition, it shows that high AMY1 CNVs lead to more salivary amylase production and therefore faster starch breakdown. Using their publicly available dataset I have replicated figures produced in their papers. R script for this analysis is available and can be applicable to other similar studies. 
